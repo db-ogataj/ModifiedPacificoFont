@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Text Generator</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #text-input { position: absolute; top: 10px; left: 10px; z-index: 1; }
+    </style>
+</head>
+<body>
+    <div id="text-input">
+        <label for="text">Enter Text:</label>
+        <input type="text" id="text" value="3D Text" />
+        <button onclick="generateText()">Generate</button>
+    </div>
+    <div id="container"></div>
+
+    <!-- Include Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, textMesh;
+
+        // Initialize the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // Add some lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2); 
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 10, 10).normalize();
+            scene.add(directionalLight);
+
+            // Initial text generation
+            generateText();
+            animate();
+        }
+
+        // Function to generate 3D text
+        function generateText() {
+            const text = document.getElementById('text').value;
+
+            if (textMesh) {
+                scene.remove(textMesh);
+            }
+
+            const loader = new THREE.FontLoader();
+            loader.load('https://github.com/db-ogataj/ModifiedPacificoFont/blob/main/Pacifico3D_3D.json', function(font) {
+                const textGeometry = new THREE.TextGeometry(text, {
+                    font: font,
+                    size: 1,
+                    height: 0.2,
+                    curveSegments: 12,
+                    bevelEnabled: false
+                });
+                const textMaterial = new THREE.MeshPhongMaterial({ color: 0x0077ff });
+                textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.x = -2;
+                scene.add(textMesh);
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            if (textMesh) textMesh.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', function() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
